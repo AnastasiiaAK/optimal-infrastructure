@@ -53,13 +53,13 @@ class ConfigurationOfSwitches:
     def calculate_transfer_time(self, number_of_using_machines, task):
         cpu_of_task = float(task["complexityOfTask"])
         transfer_rate = self.frequency / number_of_using_machines
-        transfer_time = cpu_of_task / transfer_rate / 1000
+        transfer_time = cpu_of_task / transfer_rate / 10000
         return transfer_time
 
     def calculate_transfer_price(self, number_of_using_machines, task):
         cpu_of_task = float(task["complexityOfTask"])
         transfer_rate = self.frequency / number_of_using_machines
-        transfer_time = cpu_of_task / transfer_rate / 1000
+        transfer_time = cpu_of_task / transfer_rate / 10000
         return transfer_time * self.price
 
 
