@@ -20,14 +20,13 @@ class ConfigurationOfMachines:
             self.available = "free"
         else:
             self.available = "busy"
-
         return self.available
 
     def working_time_with_particular_task(self, task, task_cpu):
         execution_time = task_cpu * 3.7 / self.core_freq / ((self.CPU - 1) * float(task["possibilityOfParalleling"]) + 1)
         # 3.7 - meaning of core_freq of my computer.
 
-        return execution_time * 30
+        return execution_time * 60# типа умножаем чтобы преобразовать в минуты
 
     def make_machine_busy(self, finish_time):
         self.available = "busy"
@@ -97,11 +96,13 @@ class SetOfMachines:
                     best_conf = current_conf
                     best_machine = machines
         else:
+            min_number_of_cpu = min(CPU)
             for machines in self.listOfFreeMachines:
-                current_conf = machines.core_freq
-                if current_conf > best_conf:
-                    best_conf = current_conf
-                    best_machine = machines
+                if machines.CPU == min_number_of_cpu:
+                    current_conf = machines.core_freq
+                    if current_conf > best_conf:
+                        best_conf = current_conf
+                        best_machine = machines
 
         return best_machine
 

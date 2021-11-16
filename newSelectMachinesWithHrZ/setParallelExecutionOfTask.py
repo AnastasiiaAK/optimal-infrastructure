@@ -22,6 +22,13 @@ def set_task_parallel(number_of_task):
     return g
 
 
+def define_priority_of_tasks(task_graph, data_table):
+    longest_path_length = lambda target: len(
+        max(nx.all_simple_paths(task_graph, source=0, target=target), key=lambda x: len(x), default=[0])) - 1
+    descriptionOffTask["priority"] = descriptionOffTask["indexOfTask"].map(longest_path_length)
+    return data_table
+
+
 # set number of task
 number_of_task = 7
 
@@ -31,18 +38,18 @@ number_of_task = 7
 # set graph of task (sequential)
 taskGraphParallel = set_task_parallel(number_of_task)
 
-
-data = [[0, 0, round(0.11952686309814453, 2), 0, 0, 0, None, None, None, None, None, "No"],
-        [1, 1, round(0.38246989250183105, 2), 0, 0, 0, None, None, None, None, None, "No"],
-        [2, 2, round(0.0005393028259277344, 2), 0, 0, 0, None, None, None, None, None, "No"],
-        [3, 3, round(1.6666145324707031, 2), 0, 0, 0, None, None, None, None, None, "No"],
-        [4, 4, round(1451.2022745609283, 2), 0, 0, 1, None, None, None, None, None, "No"],
-        [5, 5, round(0.67854, 2), 0, 0, 0, None, None, None, None, None, "No"],
-        [6, 6, round(0.4834657, 2), 0, 0, 0, None, None, None, None, None, "No"]]
+data = [[0, 0, round(0.11952686309814453, 2), 0, 0, 0, None, None, None, None, None, None, "No"],
+        [1, 1, round(0.38246989250183105, 2), 0, 0, 0, None, None, None, None, None, None, "No"],
+        [2, 2, round(0.0005393028259277344, 2), 0, 0, 0, None, None, None, None, None, None, "No"],
+        [3, 3, round(1.6666145324707031, 2), 0, 0, 0, None, None, None, None, None, None, "No"],
+        [4, 4, round(1451.2022745609283, 2), 0, 0, 1, None, None, None, None, None, None, "No"],
+        [5, 5, round(0.67854, 2), 0, 0, 0, None, None, None, None, None, None, "No"],
+        [6, 6, round(0.4834657, 2), 0, 0, 0, None, None, None, None, None, None, "No"]]
 
 descriptionOffTask = pd.DataFrame(data, columns=['indexOfTask', "nameOfTask", "complexityOfTask", "incomingMemory",
                                                  "outgoingMemory", "possibilityOfParalleling", "idOfMachine",
-                                                 "startTime", "endTime", "executingTime", "transferPrice", "done"])
+                                                 "startTime", "endTime", "executingTime", "transferPrice", "priority",
+                                                 "done"])
 
 # add column with priority
-
+descriptionOffTask = define_priority_of_tasks(taskGraphParallel, descriptionOffTask)

@@ -37,6 +37,7 @@ sorted_list_of_configuration_machine = sorted(list(itertools.chain(*sorted_list_
                                               key=lambda tup: tup[0])
 
 
+
 # define task
 def define_task():
     data = [[0, 0, round(0.11952686309814453, 2), 0, 0, 0, None, None, None, None, None, "No"],
@@ -70,11 +71,9 @@ def max_number_of_machine(price_limit, sorted_list_of_configuration_machine, ind
 
         while working_price > price_limit:
             # set graph of task (sequential)
-
             pricesOfUsingMachines = {}
             machines = SetOfMachines(number_of_machine)
             switch = ConfigurationOfSwitches(number_of_machine)
-            # print(number_of_machine)
             for i in range(1, number_of_machine + 1):
                 taskGraph, descriptionOffTask = define_task()
 
@@ -84,13 +83,15 @@ def max_number_of_machine(price_limit, sorted_list_of_configuration_machine, ind
                 machines.add_machine(machine)
                 pricesOfUsingMachines[machine.id] = machine.price
             machines.add_switch(switch)
-            common_time, scheduling_table = distribution_tasks_to_machines(taskGraph, descriptionOffTask, machines)
+            common_time, scheduling_table = distribution_tasks_to_machines(taskGraph, descriptionOffTask, [(2, 1)] ,machines)
+            print(number_of_machine)
             price_of_all_working = sum(scheduling_table.apply(
                 find_common_price, axis=1, pricesOfUsingMachines=pricesOfUsingMachines)) + sum(
                 scheduling_table["transferPrice"])
             # print('common_time', common_time, 'price_of_all_working', price_of_all_working)
             working_price = price_of_all_working
             # print(number_of_machine, working_price)
+            print("w", working_price)
             if working_price <= price_limit:
                 available_number_of_machine = number_of_machine
             number_of_machine -= 1
@@ -100,14 +101,16 @@ def max_number_of_machine(price_limit, sorted_list_of_configuration_machine, ind
         print("!Increase your budget or simplify the task!")
 
 
-maximum_available_number_of_machines_with_this_price_limit_cheapest_configuration = max_number_of_machine(9000,
+'''
+maximum_available_number_of_machines_with_this_price_limit_cheapest_configuration = max_number_of_machine(10000,
                                                                                    sorted_list_of_configuration_machine,0)
-maximum_available_number_of_machines_with_this_price_limit_expensive_configuration = max_number_of_machine(9000,
+maximum_available_number_of_machines_with_this_price_limit_expensive_configuration = max_number_of_machine(10000,
                                                                                    sorted_list_of_configuration_machine,15)
 
-'''
+
 print("maximum_available_number_of_machines_with_this_price_limit_cheapest_configuration",
       maximum_available_number_of_machines_with_this_price_limit_cheapest_configuration,
       "maximum_available_number_of_machines_with_this_price_limit_expensive_configuration",
       maximum_available_number_of_machines_with_this_price_limit_expensive_configuration, sep="\n")
+
 '''

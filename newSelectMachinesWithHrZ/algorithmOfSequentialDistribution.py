@@ -76,7 +76,9 @@ def scheduling_for_non_paralleling_task(id_of_task, current_time, machines, task
         current_time = time_of_nearest_free_machine
     free_machines = machines.list_of_free_machines(current_time)
     # choose best machines for solving this task. Choosing best because tasks are performed sequentially
+
     best_free_machine = machines.find_best_free_machines(tasks_dataframe.loc[tasks_dataframe["indexOfTask"] == id_of_task], current_time)
+
     # define what time this task is executing in this machines  and set this machine for time a busy
     working_time = best_free_machine.working_time_with_particular_task(tasks_dataframe.loc[tasks_dataframe["indexOfTask"] == id_of_task], float(tasks_dataframe.loc[tasks_dataframe["indexOfTask"] == id_of_task]["complexityOfTask"]) )
     # set in dataframe with description of task executing, start, finish time
