@@ -1,6 +1,7 @@
 from classesOfMacines import *
 # from setTaskSequential import *
 # from setParallelExecutionOfTask import *
+from parameters import dictWithPrices
 
 # working time of task on CPU
 """
@@ -60,9 +61,14 @@ machines.add_switch(switch)
 # set timeOfExecutingTask - working time for 1 task = time of work + time for transfer
 
 
+
 def scheduling_for_non_paralleling_task(id_of_task, current_time, machines, tasks_dataframe):
     transfer_time = machines.switch.calculate_transfer_time(1, tasks_dataframe.loc[tasks_dataframe["indexOfTask"] == id_of_task])
+
     transfer_price = machines.switch.calculate_transfer_price(1, tasks_dataframe.loc[tasks_dataframe["indexOfTask"] == id_of_task])
+
+    transfer_time1 = machines.switch.calculate_transfer_time_to(1, tasks_dataframe.loc[tasks_dataframe["indexOfTask"] == id_of_task])
+    transfer_time2 = machines.switch.calculate_transfer_time_from(1, tasks_dataframe.loc[tasks_dataframe["indexOfTask"] == id_of_task])
 
     current_time += transfer_time
     # find list of free machines
@@ -80,9 +86,11 @@ def scheduling_for_non_paralleling_task(id_of_task, current_time, machines, task
     best_free_machine = machines.find_best_free_machines(tasks_dataframe.loc[tasks_dataframe["indexOfTask"] == id_of_task], current_time)
 
     # define what time this task is executing in this machines  and set this machine for time a busy
-    working_time = best_free_machine.working_time_with_particular_task(tasks_dataframe.loc[tasks_dataframe["indexOfTask"] == id_of_task], float(tasks_dataframe.loc[tasks_dataframe["indexOfTask"] == id_of_task]["complexityOfTask"]) )
+    working_time = best_free_machine.working_time_with_particular_task(tasks_dataframe.loc[tasks_dataframe["indexOfTask"] == id_of_task], float(tasks_dataframe.loc[tasks_dataframe["indexOfTask"] == id_of_task]["complexityOfTask"]))
     # set in dataframe with description of task executing, start, finish time
+    tasks_dataframe.at[id_of_task, "executingTimeWithoutTransfer"] = working_time
     tasks_dataframe.at[id_of_task, "executingTime"] = working_time
+    tasks_dataframe.at[id_of_task, "executingTimeWithTransfer"] = working_time + transfer_time1 + transfer_time2
 
     tasks_dataframe.at[id_of_task, "startTime"] = current_time
     current_time += working_time
@@ -92,7 +100,12 @@ def scheduling_for_non_paralleling_task(id_of_task, current_time, machines, task
     tasks_dataframe.at[id_of_task, "done"] = "Yes"
     tasks_dataframe.at[id_of_task, "transferPrice"] = transfer_price
 
+    tasks_dataframe.at[id_of_task, "executingPrice"] = (working_time + transfer_time1 + transfer_time2) * dictWithPrices[best_free_machine.id_of_configuration][best_free_machine.CPU]
+
+    tasks_dataframe.at[id_of_task, "transferTime"] = transfer_time
+
     best_free_machine.make_machine_free()
+
     return current_time
 
 
@@ -106,6 +119,7 @@ def scheduling_for_paralleling_task(id_of_task, current_time, machines, tasks_da
         while machines.list_of_free_machines(current_time) == 0:
             current_time += 1
     '''
+
     if len(free_machines) == 0:
         time_of_nearest_free_machine = math.inf
         for device in machines.listOfMachines:
@@ -115,8 +129,13 @@ def scheduling_for_paralleling_task(id_of_task, current_time, machines, tasks_da
     free_machines = machines.list_of_free_machines(current_time)
 
     number_of_free_machines = len(free_machines)
+
     transfer_time = machines.switch.calculate_transfer_time(
         number_of_free_machines, tasks_dataframe.loc[tasks_dataframe["indexOfTask"] == id_of_task])
+
+    transfer_time1 = machines.switch.calculate_transfer_time_to(number_of_free_machines, tasks_dataframe.loc[tasks_dataframe["indexOfTask"] == id_of_task])
+    transfer_time2 = machines.switch.calculate_transfer_time_from(number_of_free_machines, tasks_dataframe.loc[tasks_dataframe["indexOfTask"] == id_of_task])
+
     current_time += transfer_time
     transfer_price = machines.switch.calculate_transfer_price(
         number_of_free_machines, tasks_dataframe.loc[tasks_dataframe["indexOfTask"] == id_of_task])
@@ -128,23 +147,40 @@ def scheduling_for_paralleling_task(id_of_task, current_time, machines, tasks_da
         common_cpu += i.CPU * i.core_freq
         list_id_of_free_machines.append(i.id)
     worst_time = 0
+
+    current_executing_price = 0
+
     for parallel_machine in free_machines:
         current_time_for_parallel = current_time
         working_time = parallel_machine.working_time_with_particular_task(
             tasks_dataframe.loc[tasks_dataframe["indexOfTask"] == id_of_task],
             parallel_machine.CPU * parallel_machine.core_freq / common_cpu * float(tasks_dataframe.loc[tasks_dataframe["indexOfTask"] == id_of_task]["complexityOfTask"]))
-        if working_time > 0:
+
+
+        part_of_task = parallel_machine.CPU * parallel_machine.core_freq / common_cpu
+
+        current_executing_price += (working_time + transfer_time1 * part_of_task + transfer_time2 * part_of_task) * dictWithPrices[parallel_machine.id_of_configuration][parallel_machine.CPU]
+
+        if working_time > worst_time:
             worst_time = working_time
         parallel_machine.make_machine_busy(working_time + current_time_for_parallel)
         parallel_machine.make_machine_free()
 
+
+    tasks_dataframe.at[id_of_task, "executingTimeWithoutTransfer"] = worst_time
+
     tasks_dataframe.at[id_of_task, "executingTime"] = worst_time
-    tasks_dataframe.at[id_of_task, "startTime"] = current_time  # start time without time for transfer
-    current_time += current_time + worst_time
+    tasks_dataframe.at[id_of_task, "startTime"] = current_time  # start time with time for transfer
+    current_time += worst_time
+
     tasks_dataframe.at[id_of_task, "endTime"] = current_time
     tasks_dataframe.at[id_of_task, "idOfMachine"] = list_id_of_free_machines
     tasks_dataframe.at[id_of_task, "done"] = "Yes"
     tasks_dataframe.at[id_of_task, "transferPrice"] = transfer_price
+    tasks_dataframe.at[id_of_task, "transferTime"] = transfer_time
+    tasks_dataframe.at[id_of_task, "executingTimeWithTransfer"] = worst_time + transfer_time1 + transfer_time2
+
+    tasks_dataframe.at[id_of_task, "executingPrice"] = current_executing_price
 
     return current_time
 

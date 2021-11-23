@@ -24,24 +24,29 @@ truePrice3 = [0.128, 0.256, 0.512, 1.024]
 truePrice4 = [0.175, 0.35, 0.7, 1.40]
 
 switchesFreq = [0.1, 1, 10]
-priceOfSwitches = [50, 1000, 100000]
+priceOfSwitches = [5, 100, 10000]
 numberOfConnectedDevices = [4, 8, 16]
 # Price with a quadratic correction
 
 
+# изменим цены на машины, чтобы влияние количества ядер на цену было больше
 def dependency_price_from_cores(core_freq, true_price, cpu):
     freq = core_freq
     price = true_price[0] / cpu[0]
-    x = np.linspace(0, 50, 1000)
-
-    y1 = core_freq/1000 * x ** 2 + price * x
+    x = np.linspace(0, 40, 1000)
+    y1 = x ** 2 / 10000 * core_freq ** 2 * 7.3 + price * x
     y2 = price * x
-    # fig, ax = plt.subplots()
-    # ax.plot(x, y1, label="quadratic")
-    # ax.plot(x, y2, label="linear")
-    # ax.legend()
-    # plt.show()
-    return list(map((lambda core: round(core_freq/1000 * core ** 2 + price * core, 3)), CPU))
+    '''
+    fig, ax = plt.subplots()
+    ax.plot(x, y1, label="quadratic")
+    ax.plot(x, y2, label="linear")
+    ax.legend()
+    plt.xlabel("Number of cores")
+    plt.ylabel("Price")
+    plt.title("Dependency price from cores")
+    plt.show()
+    '''
+    return list(map((lambda core: round(core ** 2 / 10000 * core_freq ** 2 * 7.3 + price * core_freq, 3)), CPU))
 
 
 dictWithPrices = {}
@@ -58,6 +63,13 @@ for x, y, z, t in zip(list(range(1, len(switchesFreq) + 1, 1)), switchesFreq, pr
     dictSwitches[x]["price"] = z
     dictSwitches[x]["frequency"] = y
     dictSwitches[x]["number_attached"] = t
-print(dict(dictSwitches))
+
+# print("freq", truePrice1[2] / dictWithPrices[1][8])
+# print("freq", truePrice1[3] / dictWithPrices[1][16]) # должно быть 0.62
+
+# print("cores", truePrice4[3] / dictWithPrices[4][16]) # должно быть 0.54
+
+
+
 
 

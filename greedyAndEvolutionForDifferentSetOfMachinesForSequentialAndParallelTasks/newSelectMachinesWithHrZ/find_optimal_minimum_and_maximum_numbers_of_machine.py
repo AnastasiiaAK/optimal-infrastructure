@@ -37,21 +37,33 @@ sorted_list_of_configuration_machine = sorted(list(itertools.chain(*sorted_list_
                                               key=lambda tup: tup[0])
 
 
+
 # define task
 def define_task():
-    data = [[0, 0, round(0.11952686309814453, 2), 0, 0, 0, None, None, None, None, None, "No"],
-            [1, 1, round(0.38246989250183105, 2), 0, 0, 0, None, None, None, None, None, "No"],
-            [2, 2, round(0.0005393028259277344, 2), 0, 0, 0, None, None, None, None, None, "No"],
-            [3, 3, round(1.6666145324707031, 2), 0, 0, 0, None, None, None, None, None, "No"],
-            [4, 4, round(1451.2022745609283, 2), 0, 0, 1, None, None, None, None, None, "No"],
-            [5, 5, round(0.67854, 2), 0, 0, 0, None, None, None, None, None, "No"],
-            [6, 6, round(0.4834657, 2), 0, 0, 0, None, None, None, None, None, "No"]]
+    data = [
+        [0, 0, round(0.11952686309814453, 2), 0.119 / 300, 300, 200, 0, None, None, None, None, None, None,  None, None,
+         "No"],
+        [1, 1, round(0.38246989250183105, 2), 0.3824 / 200, 200, 500, 0, None, None, None, None, None, None,  None, None,
+         "No"],
+        [2, 2, round(0.0005393028259277344, 4), 0.0005393 / 500, 500, 1000, 0, None, None, None, None, None,  None, None,
+         None, "No"],
+        [3, 3, round(1.6666145324707031, 2), 1.66661 / 1000, 1000, 780, 0, None, None, None, None, None, None, None,
+         None, "No"],
+        [4, 4, round(1451.2022745609283, 2), 1451.2022 / 780, 780, 880, 1, None, None, None, None, None,  None, None,
+         None, "No"],
+        [5, 5, round(0.67854, 2), 0.67854 / 880, 880, 200, 0, None, None, None, None, None, None, None,  None, "No"],
+        [6, 6, round(0.4834657, 2), 0.48346 / 200, 200, 0, 0, None, None, None, None, None, None, None, None, "No"]]
+
+    descriptionOffTask = pd.DataFrame(data, columns=['indexOfTask', "nameOfTask", "complexityOfTask",
+                                                     "complexityPerUnitOfmemory", "incomingMemory",
+                                                     "outgoingMemory", "possibilityOfParalleling", "idOfMachine",
+                                                     "startTime", "endTime", "executingTimeWithoutTransfer",
+                                                     "executingTimeWithTransfer", "executingPrice",
+                                                     "transferTime", "transferPrice", "done"])
+
     number_of_task = len(data)
     taskGraph = set_task(number_of_task)
 
-    descriptionOffTask = pd.DataFrame(data, columns=['indexOfTask', "nameOfTask", "complexityOfTask", "incomingMemory",
-                                                     "outgoingMemory", "possibilityOfParalleling", "idOfMachine",
-                                                     "startTime", "endTime", "executingTime", "transferPrice", "done"])
 
     return taskGraph, descriptionOffTask
 
@@ -70,11 +82,9 @@ def max_number_of_machine(price_limit, sorted_list_of_configuration_machine, ind
 
         while working_price > price_limit:
             # set graph of task (sequential)
-
             pricesOfUsingMachines = {}
             machines = SetOfMachines(number_of_machine)
             switch = ConfigurationOfSwitches(number_of_machine)
-            # print(number_of_machine)
             for i in range(1, number_of_machine + 1):
                 taskGraph, descriptionOffTask = define_task()
 
@@ -84,13 +94,15 @@ def max_number_of_machine(price_limit, sorted_list_of_configuration_machine, ind
                 machines.add_machine(machine)
                 pricesOfUsingMachines[machine.id] = machine.price
             machines.add_switch(switch)
-            common_time, scheduling_table = distribution_tasks_to_machines(taskGraph, descriptionOffTask, machines)
+            common_time, scheduling_table = distribution_tasks_to_machines(taskGraph, descriptionOffTask, [(2, 1)] ,machines)
+            print(number_of_machine)
             price_of_all_working = sum(scheduling_table.apply(
                 find_common_price, axis=1, pricesOfUsingMachines=pricesOfUsingMachines)) + sum(
                 scheduling_table["transferPrice"])
             # print('common_time', common_time, 'price_of_all_working', price_of_all_working)
             working_price = price_of_all_working
             # print(number_of_machine, working_price)
+            print("w", working_price)
             if working_price <= price_limit:
                 available_number_of_machine = number_of_machine
             number_of_machine -= 1
@@ -99,15 +111,17 @@ def max_number_of_machine(price_limit, sorted_list_of_configuration_machine, ind
     except:
         print("!Increase your budget or simplify the task!")
 
+
 '''
-maximum_available_number_of_machines_with_this_price_limit_cheapest_configuration = max_number_of_machine(9000,
+maximum_available_number_of_machines_with_this_price_limit_cheapest_configuration = max_number_of_machine(10000,
                                                                                    sorted_list_of_configuration_machine,0)
-maximum_available_number_of_machines_with_this_price_limit_expensive_configuration = max_number_of_machine(9000,
+maximum_available_number_of_machines_with_this_price_limit_expensive_configuration = max_number_of_machine(10000,
                                                                                    sorted_list_of_configuration_machine,15)
-'''
-'''
+
+
 print("maximum_available_number_of_machines_with_this_price_limit_cheapest_configuration",
       maximum_available_number_of_machines_with_this_price_limit_cheapest_configuration,
       "maximum_available_number_of_machines_with_this_price_limit_expensive_configuration",
       maximum_available_number_of_machines_with_this_price_limit_expensive_configuration, sep="\n")
+
 '''

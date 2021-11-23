@@ -26,7 +26,7 @@ class ConfigurationOfMachines:
         execution_time = task_cpu * 3.7 / self.core_freq / ((self.CPU - 1) * float(task["possibilityOfParalleling"]) + 1)
         # 3.7 - meaning of core_freq of my computer.
 
-        return execution_time * 60
+        return execution_time * 60  # типа умножаем чтобы преобразовать в минуты
 
     def make_machine_busy(self, finish_time):
         self.available = "busy"
@@ -44,22 +44,39 @@ class ConfigurationOfSwitches:
             id_of_swithes = 3
         else:
             id_of_swithes = 2
-        self.frequency = dictSwitches[id_of_swithes]["frequency"]
-        self.price = dictSwitches[id_of_swithes]["price"]
-        self.attached_devices = dictSwitches[id_of_swithes]["number_attached"]
+
         self.id_of_switches = id_of_swithes
+        self.frequency = dictSwitches[self.id_of_switches]["frequency"]
+        self.price = dictSwitches[self.id_of_switches]["price"]
+        self.attached_devices = dictSwitches[self.id_of_switches]["number_attached"]
+
+    def calculate_transfer_time_to(self, number_of_using_machines, task):
+        memory_of_task = float(task["incomingMemory"])
+        transfer_time = (memory_of_task / (10 * self.frequency / number_of_using_machines))
+        # transfer_rate = self.frequency * 71 / number_of_using_machines
+        # transfer_time = memory_of_task / transfer_rate
+        return transfer_time / 60
+
+    def calculate_transfer_time_from(self, number_of_using_machines, task):
+        memory_of_task = float(task["outgoingMemory"])
+        transfer_time = (memory_of_task / (10 * self.frequency / number_of_using_machines))
+        # transfer_rate = self.frequency * 71 / number_of_using_machines
+        # transfer_time = memory_of_task / transfer_rate
+        return transfer_time / 60
 
     def calculate_transfer_time(self, number_of_using_machines, task):
-        cpu_of_task = float(task["complexityOfTask"])
-        transfer_rate = self.frequency / number_of_using_machines
-        transfer_time = cpu_of_task / transfer_rate / 10000
-        return transfer_time
+        memory_of_task = float(task["incomingMemory"])
+        transfer_time = (memory_of_task / (10 * self.frequency / number_of_using_machines))
+        # transfer_rate = self.frequency * 71 / number_of_using_machines
+        # transfer_time = memory_of_task / transfer_rate
+        return transfer_time / 60
 
     def calculate_transfer_price(self, number_of_using_machines, task):
-        cpu_of_task = float(task["complexityOfTask"])
-        transfer_rate = self.frequency / number_of_using_machines
-        transfer_time = cpu_of_task / transfer_rate / 10000
-        return transfer_time * self.price
+        memory_of_task = float(task["incomingMemory"])
+        transfer_time = (memory_of_task / (10 * self.frequency / number_of_using_machines))
+        # transfer_rate = self.frequency * 71
+        # transfer_time = memory_of_task / transfer_rate * number_of_using_machines
+        return transfer_time / 60 * self.price
 
 
 class SetOfMachines:
